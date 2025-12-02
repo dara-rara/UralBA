@@ -1,9 +1,11 @@
 package ural.ba.project.UralBA.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import ural.ba.project.UralBA.dto.UserRequestDTO;
 import ural.ba.project.UralBA.model.RefreshToken;
 import ural.ba.project.UralBA.model.Role;
@@ -12,6 +14,8 @@ import ural.ba.project.UralBA.service.RefreshTokenService;
 import ural.ba.project.UralBA.service.UserService;
 
 /**
+ * Контроллер для управления пользователями и связанными с ними данными
+ *
  * @author Daria
  */
 @RestController
@@ -29,6 +33,10 @@ public class UserController {
         this.refreshTokenService = refreshTokenService;
     }
 
+    /**
+     * Эндпоинт для создания нового пользователя в системе
+     * Хэширует пароль, устанавливает роль по умолчанию и генерирует пустую сущность Refresh Token.
+     */
     @PostMapping("/create")
     public ResponseEntity<?> create(@RequestBody UserRequestDTO userRequestDTO) {
         User user = new User();
@@ -44,9 +52,9 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAuthority('USER')")
-    @GetMapping("/get")
-    public ResponseEntity<?> get() {
-        return ResponseEntity.ok().body("test");
-    }
+//    @PreAuthorize("hasAuthority('USER')")
+//    @GetMapping("/get")
+//    public ResponseEntity<?> get() {
+//        return ResponseEntity.ok().body("test");
+//    }
 }

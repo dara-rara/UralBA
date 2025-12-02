@@ -18,8 +18,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
-
 /**
+ * Провайдер JWT токенов
+ * Отвечает за генерацию Access и Refresh токенов,
+ * их валидацию и извлечение содержащихся в них данных (claims)
+ * Использует библиотеку JJWT и секретные ключи из конфигурационных файлов
+ *
  * @author Daria
  */
 @Component
@@ -30,14 +34,23 @@ public class JwtProvider {
 
     private static final Logger log = LoggerFactory.getLogger(JwtProvider.class);
 
+    /**
+     * Конструктор для инициализации секретных ключей из параметров приложения
+     * Ключи декодируются из формата Base64 и преобразуются в объекты SecretKey
+     */
     public JwtProvider(
             @Value("${jwt.secret.access}") String jwtAccessSecret,
             @Value("${jwt.secret.refresh}") String jwtRefreshSecret
     ) {
-        this.jwtAccessSecret = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtAccessSecret));
-        this.jwtRefreshSecret = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtRefreshSecret));
+        // Добавлено .trim() для устойчивости к случайным пробелам в конфигурации
+        this.jwtAccessSecret = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtAccessSecret.trim()));
+        this.jwtRefreshSecret = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtRefreshSecret.trim()));
     }
 
+    /**
+     * Генерирует новый JWT Access токен для указанного пользователя
+     * Токен подписывается с использованием jwtAccessSecret и содержит email, срок действия и роли пользователя
+     */
     public String generateAccessToken(@NotNull User user) {
         final LocalDateTime now = LocalDateTime.now();
         final Instant accessExpirationInstant = now.plusMinutes(5).atZone(ZoneId.systemDefault()).toInstant();
@@ -51,6 +64,10 @@ public class JwtProvider {
                 .compact();
     }
 
+    /**
+     * Генерирует новый JWT Refresh токен для указанного пользователя
+     * Токен подписывается с использованием jwtRefreshSecret и имеет больший срок действия
+     */
     public String generateRefreshToken(@NotNull User user) {
         final LocalDateTime now = LocalDateTime.now();
         final Instant refreshExpirationInstant = now.plusDays(30).atZone(ZoneId.systemDefault()).toInstant();
@@ -64,14 +81,24 @@ public class JwtProvider {
                 .compact();
     }
 
+    /**
+     * Выполняет валидацию предоставленного Access токена
+     */
     public boolean validateAccessToken(@NotNull String accessToken) {
         return validateToken(accessToken, jwtAccessSecret);
     }
 
+    /**
+     * Выполняет валидацию предоставленного Refresh токена
+     */
     public boolean validateRefreshToken(@NotNull String refreshToken) {
         return validateToken(refreshToken, jwtRefreshSecret);
     }
 
+    /**
+     * Метод для валидации токена с использованием заданного секретного ключа
+     * Обрабатывает различные исключения JWT (просрочен, невалидная подпись и т.д.)
+     */
     private boolean validateToken(@NotNull String token, @NotNull Key secret) {
         try {
             Jwts.parserBuilder()
@@ -80,27 +107,36 @@ public class JwtProvider {
                     .parseClaimsJws(token);
             return true;
         } catch (ExpiredJwtException expEx) {
-            log.error("Token expired", expEx);
+            log.debug("Token expired", expEx);
         } catch (UnsupportedJwtException unsEx) {
-            log.error("Unsupported jwt", unsEx);
+            log.debug("Unsupported jwt", unsEx);
         } catch (MalformedJwtException mjEx) {
-            log.error("Malformed jwt", mjEx);
+            log.debug("Malformed jwt", mjEx);
         } catch (SignatureException sEx) {
-            log.error("Invalid signature", sEx);
+            log.debug("Invalid signature", sEx);
         } catch (Exception e) {
-            log.error("Invalid token", e);
+            log.debug("Invalid token", e);
         }
         return false;
     }
 
+    /**
+     * Извлекает тело (Claims) из валидного Access токена
+     */
     public Claims getAccessClaims(@NotNull String token) {
         return getClaims(token, jwtAccessSecret);
     }
 
+    /**
+     * Извлекает тело (Claims) из валидного Refresh токена
+     */
     public Claims getRefreshClaims(@NotNull String token) {
         return getClaims(token, jwtRefreshSecret);
     }
 
+    /**
+     * Приватный вспомогательный метод для парсинга токена и получения его Claims
+     */
     private Claims getClaims(@NotNull String token, @NotNull Key secret) {
         return Jwts.parserBuilder()
                 .setSigningKey(secret)
@@ -108,5 +144,4 @@ public class JwtProvider {
                 .parseClaimsJws(token)
                 .getBody();
     }
-
 }
