@@ -1,11 +1,10 @@
 package ural.ba.project.UralBA.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ural.ba.project.UralBA.dto.UserRequestDTO;
 import ural.ba.project.UralBA.model.RefreshToken;
 import ural.ba.project.UralBA.model.Role;
@@ -38,13 +37,15 @@ public class UserController {
      * Хэширует пароль, устанавливает роль по умолчанию и генерирует пустую сущность Refresh Token.
      */
     @PostMapping("/create")
-    public ResponseEntity<?> create(@RequestBody UserRequestDTO userRequestDTO) {
-        User user = new User();
-        user.setName(userRequestDTO.name());
-        user.setEmail(userRequestDTO.email());
-        user.setPassword(passwordEncoder.encode(userRequestDTO.password()));
-        user.setPosition(userRequestDTO.position());
-        user.setRole(Role.NEW_BID);
+    public ResponseEntity<?> create(@Valid @RequestBody UserRequestDTO userRequestDTO) {
+        User user = new User(
+                userRequestDTO.name(),
+                userRequestDTO.email(),
+                passwordEncoder.encode(userRequestDTO.password()),
+                userRequestDTO.position(),
+                userRequestDTO.company(),
+                Role.NEW_BID
+        );
         userService.create(user);
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUser(user);
@@ -52,9 +53,11 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-//    @PreAuthorize("hasAuthority('USER')")
-//    @GetMapping("/get")
-//    public ResponseEntity<?> get() {
-//        return ResponseEntity.ok().body("test");
-//    }
+
+
+    @PreAuthorize("hasAuthority('USER')")
+    @GetMapping("/get")
+    public ResponseEntity<?> get() {
+        return ResponseEntity.ok().body("test");
+    }
 }

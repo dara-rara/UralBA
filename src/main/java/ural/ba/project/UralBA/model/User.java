@@ -24,12 +24,22 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    public User(Long id_user, String name, String email, String password, String position, Role role) {
-        this.id_user = id_user;
+    @Column(nullable = true)
+    private String position;
+
+    @Column(nullable = true)
+    private String company;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+
+    public User(String name, String email, String password, String position, String company, Role role) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.position = position;
+        this.company = company;
         this.role = role;
     }
 
@@ -77,6 +87,14 @@ public class User {
         this.position = position;
     }
 
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
+
     public Role getRole() {
         return role;
     }
@@ -84,11 +102,5 @@ public class User {
     public void setRole(Role role) {
         this.role = role;
     }
-
-    @Column(nullable = false)
-    private String position;
-
-    @Enumerated(EnumType.STRING)
-    private Role role;
 
 }

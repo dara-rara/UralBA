@@ -24,7 +24,7 @@ public class UserService {
      *
      * @throws IllegalArgumentException Если пользователь с таким email уже существует.
      */
-    public User create(User user) {
+    public void create(User user) {
         String email = user.getEmail();
 
         if (emailExists(email)) {
@@ -32,7 +32,13 @@ public class UserService {
                     "Пользователь с email = " + email + " уже существует"
             );
         }
+        save(user);
+    }
 
+    /**
+     * Сохраняет пользователя в системе
+     */
+    public User save(User user) {
         return userRepository.save(user);
     }
 

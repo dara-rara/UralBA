@@ -9,7 +9,7 @@ spring:
     name: ural-ba
 
   datasource:
-    url: jdbc:postgresql://localhost:5555/ural-ba
+    url: jdbc:postgresql://localhost:5555/uralba
     username: postgres
     password: postgres
 
