@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 import ural.ba.project.UralBA.dto.ExceptionResponseDTO;
 
 import java.util.Objects;
@@ -21,6 +22,22 @@ import java.util.stream.Collectors;
  */
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    /**
+     * Обработка ошибоки несуществующего пути
+     */
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<ExceptionResponseDTO> handleNotFound(NoHandlerFoundException ex,
+                                                               HttpServletRequest request) {
+        ExceptionResponseDTO error = new ExceptionResponseDTO(
+                HttpStatus.NOT_FOUND,
+                "Путь не найден",
+                request.getRequestURI(),
+                "PATH_NOT_FOUND"
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
 
     /**
      * Обработка ошибок доступа

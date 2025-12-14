@@ -7,6 +7,11 @@ jwt:
 spring:
   application:
     name: ural-ba
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
 
   datasource:
     url: jdbc:postgresql://localhost:5555/uralba
