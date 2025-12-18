@@ -33,15 +33,11 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    private final JwtProvider jwtProvider;
-    private final HandlerExceptionResolver handlerExceptionResolver;
     private final JwtFilter jwtFilter;
 
     public SecurityConfig(JwtProvider jwtProvider,
                           @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver) {
-        this.jwtProvider = jwtProvider;
-        this.handlerExceptionResolver = handlerExceptionResolver;
-        this.jwtFilter = new JwtFilter(jwtProvider, handlerExceptionResolver);;
+        this.jwtFilter = new JwtFilter(jwtProvider, handlerExceptionResolver);
     }
 
     /**

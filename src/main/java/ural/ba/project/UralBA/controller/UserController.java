@@ -2,9 +2,10 @@ package ural.ba.project.UralBA.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import ural.ba.project.UralBA.dto.RoleResponseDTO;
 import ural.ba.project.UralBA.dto.UserRequestDTO;
 import ural.ba.project.UralBA.model.RefreshToken;
 import ural.ba.project.UralBA.model.Role;
@@ -34,7 +35,7 @@ public class UserController {
 
     /**
      * Эндпоинт для создания нового пользователя в системе
-     * Хэширует пароль, устанавливает роль по умолчанию и генерирует пустую сущность Refresh Token.
+     * Хэширует пароль, устанавливает роль по умолчанию и генерирует пустую сущность Refresh Token
      */
     @PostMapping("/create")
     public ResponseEntity<?> create(@Valid @RequestBody UserRequestDTO userRequestDTO) {
@@ -53,11 +54,18 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-
-
-    @PreAuthorize("hasAuthority('USER')")
-    @GetMapping("/get")
-    public ResponseEntity<?> get() {
-        return ResponseEntity.ok().body("test");
+    /**
+     * Эндпоинта для показа роли пользователя
+     */
+    @GetMapping("/status")
+    public ResponseEntity<?> getStatus(@AuthenticationPrincipal String email) {
+        User user = userService.findByEmail(email);
+        return ResponseEntity.ok(new RoleResponseDTO(user.getRole()));
     }
+
+//    @PreAuthorize("hasAuthority('USER')")
+//    @GetMapping("/get")
+//    public ResponseEntity<?> get() {
+//        return ResponseEntity.ok().body("test");
+//    }
 }
