@@ -58,4 +58,14 @@ public class UserService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь", "email=" + email));
     }
+
+    /**
+     * Ищет пользователя по id
+     *
+     * @throws ResourceNotFoundException Если пользователь с указанным id не найден
+     */
+    public User findById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь", "id=" + id));
+    }
 }

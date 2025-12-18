@@ -4,6 +4,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 /**
+ * DTO-запрос для создания/обновления пользователя
+ *
  * @author Daria
  */
 public record UserRequestDTO(

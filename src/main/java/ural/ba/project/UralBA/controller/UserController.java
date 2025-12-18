@@ -2,9 +2,11 @@ package ural.ba.project.UralBA.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import ural.ba.project.UralBA.dto.BidRequestDTO;
 import ural.ba.project.UralBA.dto.RoleResponseDTO;
 import ural.ba.project.UralBA.dto.UserRequestDTO;
 import ural.ba.project.UralBA.model.RefreshToken;
@@ -55,12 +57,24 @@ public class UserController {
     }
 
     /**
-     * Эндпоинта для показа роли пользователя
+     * Эндпоинта для показа роли пользователя (права доступа)
      */
     @GetMapping("/status")
     public ResponseEntity<?> getStatus(@AuthenticationPrincipal String email) {
         User user = userService.findByEmail(email);
-        return ResponseEntity.ok(new RoleResponseDTO(user.getRole()));
+        return ResponseEntity.ok(new RoleResponseDTO(user.getRole().getAuthority()));
+    }
+
+    /**
+     * Эндпоинта для смены роли
+     */
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping("/updateRole")
+    public ResponseEntity<?> editRole(@Valid @RequestBody BidRequestDTO request) {
+        User user = userService.findById(request.idUser());
+        user.setRole(Role.valueOf(request.role()));
+        userService.save(user);
+        return ResponseEntity.ok().build();
     }
 
 //    @PreAuthorize("hasAuthority('USER')")
