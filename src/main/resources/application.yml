@@ -17,6 +17,7 @@ spring:
     url: jdbc:postgresql://localhost:5555/uralba
     username: postgres
     password: postgres
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     open-in-view: false

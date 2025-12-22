@@ -13,7 +13,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_user;
+    private Long idUser;
 
     @Column(nullable = false)
     private String name;
@@ -29,6 +29,9 @@ public class User {
 
     @Column(nullable = true)
     private String company;
+
+    @Column(nullable = true)
+    private String description;
 
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -47,12 +50,12 @@ public class User {
 
     }
 
-    public Long getId_user() {
-        return id_user;
+    public Long getIdUser() {
+        return idUser;
     }
 
-    public void setId_user(Long id_user) {
-        this.id_user = id_user;
+    public void setIdUser(Long idUser) {
+        this.idUser = idUser;
     }
 
     public String getName() {
@@ -103,4 +106,11 @@ public class User {
         this.role = role;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

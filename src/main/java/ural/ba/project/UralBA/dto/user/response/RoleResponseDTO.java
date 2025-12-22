@@ -1,4 +1,4 @@
-package ural.ba.project.UralBA.dto;
+package ural.ba.project.UralBA.dto.user.response;
 
 /**
  * DTO-ответ отображение роли пользователя

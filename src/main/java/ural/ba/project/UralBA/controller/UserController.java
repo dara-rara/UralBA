@@ -5,15 +5,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import ural.ba.project.UralBA.dto.BidRequestDTO;
-import ural.ba.project.UralBA.dto.RoleResponseDTO;
-import ural.ba.project.UralBA.dto.UserRequestDTO;
+import ural.ba.project.UralBA.dto.user.request.BidRequestDTO;
+import ural.ba.project.UralBA.dto.user.request.UserRequestDTO;
+import ural.ba.project.UralBA.dto.user.response.*;
+import ural.ba.project.UralBA.mapper.UserMapper;
+import ural.ba.project.UralBA.model.ReasonRefusal;
 import ural.ba.project.UralBA.model.RefreshToken;
 import ural.ba.project.UralBA.model.Role;
 import ural.ba.project.UralBA.model.User;
+import ural.ba.project.UralBA.service.ReasonRefusalService;
 import ural.ba.project.UralBA.service.RefreshTokenService;
 import ural.ba.project.UralBA.service.UserService;
+
+import java.util.List;
 
 /**
  * Контроллер для управления пользователями и связанными с ними данными
@@ -25,20 +31,25 @@ import ural.ba.project.UralBA.service.UserService;
 public class UserController {
 
     private final UserService userService;
+    private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokenService;
+    private final ReasonRefusalService reasonRefusalService;
 
-    public UserController(UserService userService, PasswordEncoder passwordEncoder,
-                          RefreshTokenService refreshTokenService) {
+    public UserController(UserService userService, UserMapper userMapper, PasswordEncoder passwordEncoder,
+                          RefreshTokenService refreshTokenService, ReasonRefusalService reasonRefusalService) {
         this.userService = userService;
+        this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.refreshTokenService = refreshTokenService;
+        this.reasonRefusalService = reasonRefusalService;
     }
 
     /**
      * Эндпоинт для создания нового пользователя в системе
      * Хэширует пароль, устанавливает роль по умолчанию и генерирует пустую сущность Refresh Token
      */
+    @Transactional
     @PostMapping("/create")
     public ResponseEntity<?> create(@Valid @RequestBody UserRequestDTO userRequestDTO) {
         User user = new User(
@@ -50,15 +61,18 @@ public class UserController {
                 Role.NEW_BID
         );
         userService.create(user);
+
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUser(user);
         refreshTokenService.save(refreshToken);
+
         return ResponseEntity.ok().build();
     }
 
     /**
-     * Эндпоинта для показа роли пользователя (права доступа)
+     * Эндпоинт для показа роли пользователя (права доступа)
      */
+    @Transactional(readOnly = true)
     @GetMapping("/status")
     public ResponseEntity<?> getStatus(@AuthenticationPrincipal String email) {
         User user = userService.findByEmail(email);
@@ -66,15 +80,60 @@ public class UserController {
     }
 
     /**
-     * Эндпоинта для смены роли
+     * Эндпоинт для смены роли
      */
+    @Transactional
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/updateRole")
     public ResponseEntity<?> editRole(@Valid @RequestBody BidRequestDTO request) {
         User user = userService.findById(request.idUser());
         user.setRole(Role.valueOf(request.role()));
         userService.save(user);
+
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Эндпоинт для показа заявок
+     */
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/bids")
+    public ResponseEntity<?> getBidList() {
+        List<User> usersNewBid = userService.findByAllRole(Role.NEW_BID);
+        List<UserBidDTO> usersNewBidDTO = userMapper.toUserBidResponseDTOList(usersNewBid);
+
+        List<User> usersRejectedBid = userService.findByAllRole(Role.REJECTED_BID);
+        List<ReasonRefusal> reasonRefusals = reasonRefusalService.findByAll();
+        List<UserBidDTO> usersRejectedBidDTO = userMapper.toUserBidResponseDTOList(usersRejectedBid, reasonRefusals);
+
+        return ResponseEntity.ok(new UserBidsResponseDTO(usersNewBidDTO, usersRejectedBidDTO));
+    }
+
+    /**
+     * Эндпоинт для показа всех пользователей с ролью USER
+     */
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/all")
+    public ResponseEntity<?> getAll() {
+        List<User> users = userService.findByAllRole(Role.USER);
+        List<UserShortResponseDTO> usersDTO = userMapper.toUserShortResponseDTOList(users);
+
+        return ResponseEntity.ok(usersDTO);
+    }
+
+    /**
+     * Эндпоинт для получения одного пользователя
+     */
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUser(@PathVariable long id) {
+        User user = userService.findById(id);
+        UserResponseDTO userDTO = userMapper.toUserResponseDTO(user);
+
+        return ResponseEntity.ok(userDTO);
     }
 
 //    @PreAuthorize("hasAuthority('USER')")

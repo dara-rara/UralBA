@@ -13,7 +13,7 @@ public class RefreshToken {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_token;
+    private Long idToken;
 
     @Column(nullable = true)
     private String token;
@@ -23,7 +23,7 @@ public class RefreshToken {
     private User user;
 
     public RefreshToken(Long idToken, String token, User user) {
-        id_token = idToken;
+        this.idToken = idToken;
         this.token = token;
         this.user = user;
     }
@@ -32,12 +32,12 @@ public class RefreshToken {
 
     }
 
-    public Long getId_token() {
-        return id_token;
+    public Long getIdToken() {
+        return idToken;
     }
 
-    public void setId_token(Long id_token) {
-        this.id_token = id_token;
+    public void setIdToken(Long idToken) {
+        this.idToken = idToken;
     }
 
     public String getToken() {

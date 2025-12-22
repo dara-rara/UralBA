@@ -2,6 +2,7 @@ package ural.ba.project.UralBA.controller;
 
 import jakarta.security.auth.message.AuthException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +31,7 @@ public class AuthController {
     /**
      * Эндпоинт для входа пользователя в систему (логин)
      */
+    @Transactional
     @PostMapping("/login")
     public ResponseEntity<JwtResponseDTO> login(@RequestBody JwtRequestDTO jwtRequestDTO
     ) throws AuthException {
@@ -53,6 +55,7 @@ public class AuthController {
      * Эндпоинт для полного обновления пары Access и Refresh токенов
      * Используется механизм ротации токенов (Refresh Token Rotation)
      */
+    @Transactional
     @PostMapping("/refresh")
     public ResponseEntity<JwtResponseDTO> getNewRefreshToken(
             @RequestBody RefreshJwtRequestDTO refreshJwtRequestDTO

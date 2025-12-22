@@ -1,4 +1,4 @@
-package ural.ba.project.UralBA.dto;
+package ural.ba.project.UralBA.dto.user.request;
 
 import jakarta.validation.constraints.NotBlank;
 import ural.ba.project.UralBA.model.Role;

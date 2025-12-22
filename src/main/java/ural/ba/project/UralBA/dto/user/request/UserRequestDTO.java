@@ -1,4 +1,4 @@
-package ural.ba.project.UralBA.dto;
+package ural.ba.project.UralBA.dto.user.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

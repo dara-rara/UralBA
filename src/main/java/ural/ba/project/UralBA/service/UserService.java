@@ -2,11 +2,14 @@ package ural.ba.project.UralBA.service;
 
 import org.springframework.stereotype.Service;
 import ural.ba.project.UralBA.exepction.ResourceNotFoundException;
+import ural.ba.project.UralBA.model.Role;
 import ural.ba.project.UralBA.model.User;
 import ural.ba.project.UralBA.repository.UserRepository;
 
+import java.util.List;
+
 /**
- * Предоставляет методы для создания, проверки существования и поиска пользователей
+ * Предоставляет методы для создания, редактирования и поиска пользователей
  *
  * @author Daria
  */
@@ -67,5 +70,12 @@ public class UserService {
     public User findById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь", "id=" + id));
+    }
+
+    /**
+     * Отдаёт список пользователей по роли
+     */
+    public List<User> findByAllRole(Role role) {
+        return userRepository.findByRole(role);
     }
 }

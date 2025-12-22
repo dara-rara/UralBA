@@ -27,7 +27,7 @@ public class RefreshTokenService {
      */
     public RefreshToken findByUser(User user) {
         return refreshTokenRepository.findByUser(user)
-                .orElseThrow(() -> new ResourceNotFoundException("Токен", "id_user=" + user.getId_user()));
+                .orElseThrow(() -> new ResourceNotFoundException("Токен", "id_user=" + user.getIdUser()));
     }
 
     /**
