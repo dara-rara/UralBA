@@ -13,9 +13,8 @@ import ural.ba.project.UralBA.model.User;
 
 import javax.crypto.SecretKey;
 import java.security.Key;
+import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 /**
@@ -31,6 +30,8 @@ public class JwtProvider {
 
     private final SecretKey jwtAccessSecret;
     private final SecretKey jwtRefreshSecret;
+    private final Duration accessTokenExpiration;
+    private final Duration refreshTokenExpiration;
 
     private static final Logger log = LoggerFactory.getLogger(JwtProvider.class);
 
@@ -40,11 +41,15 @@ public class JwtProvider {
      */
     public JwtProvider(
             @Value("${jwt.secret.access}") String jwtAccessSecret,
-            @Value("${jwt.secret.refresh}") String jwtRefreshSecret
+            @Value("${jwt.secret.refresh}") String jwtRefreshSecret,
+            @Value("${jwt.expiration.access}") Duration accessTokenExpiration,
+            @Value("${jwt.expiration.refresh}") Duration refreshTokenExpiration
     ) {
         // Добавлено .trim() для устойчивости к случайным пробелам в конфигурации
         this.jwtAccessSecret = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtAccessSecret.trim()));
         this.jwtRefreshSecret = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtRefreshSecret.trim()));
+        this.accessTokenExpiration = accessTokenExpiration;
+        this.refreshTokenExpiration = refreshTokenExpiration;
     }
 
     /**
@@ -52,12 +57,13 @@ public class JwtProvider {
      * Токен подписывается с использованием jwtAccessSecret и содержит email, срок действия и роли пользователя
      */
     public String generateAccessToken(@NotNull User user) {
-        final LocalDateTime now = LocalDateTime.now();
-        final Instant accessExpirationInstant = now.plusMinutes(5).atZone(ZoneId.systemDefault()).toInstant();
-        final Date accessExpiration = Date.from(accessExpirationInstant);
+        final Instant now = Instant.now();
+        final Instant accessExpirationInstant = now.plus(accessTokenExpiration);
+
         return Jwts.builder()
                 .setSubject(user.getEmail())
-                .setExpiration(accessExpiration)
+                .setIssuedAt(Date.from(now))
+                .setExpiration(Date.from(accessExpirationInstant))
                 .signWith(jwtAccessSecret)
                 .claim("roles", List.of(user.getRole().getAuthority()))
                 .claim("firstName", user.getName())
@@ -69,12 +75,13 @@ public class JwtProvider {
      * Токен подписывается с использованием jwtRefreshSecret и имеет больший срок действия
      */
     public String generateRefreshToken(@NotNull User user) {
-        final LocalDateTime now = LocalDateTime.now();
-        final Instant refreshExpirationInstant = now.plusDays(30).atZone(ZoneId.systemDefault()).toInstant();
-        final Date refreshExpiration = Date.from(refreshExpirationInstant);
+        final Instant now = Instant.now();
+        final Instant refreshExpirationInstant = now.plus(refreshTokenExpiration);
+
         return Jwts.builder()
                 .setSubject(user.getEmail())
-                .setExpiration(refreshExpiration)
+                .setIssuedAt(Date.from(now))
+                .setExpiration(Date.from(refreshExpirationInstant))
                 .signWith(jwtRefreshSecret)
                 .claim("roles", List.of(user.getRole().getAuthority()))
                 .claim("firstName", user.getName())

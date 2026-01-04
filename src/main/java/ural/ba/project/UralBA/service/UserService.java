@@ -73,9 +73,9 @@ public class UserService {
     }
 
     /**
-     * Отдаёт список пользователей по роли
+     * Отдаёт список пользователей по роли с фильтрацией по имени
      */
-    public List<User> findByAllRole(Role role) {
-        return userRepository.findByRole(role);
+    public List<User> findByRoleAndFilter(Role role, String nameFilter) {
+        return userRepository.findByRoleAndFilter(role, nameFilter);
     }
 }

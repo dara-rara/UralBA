@@ -85,9 +85,17 @@ public class UserController {
     @Transactional
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/updateRole")
-    public ResponseEntity<?> editRole(@Valid @RequestBody BidRequestDTO request) {
-        User user = userService.findById(request.idUser());
-        user.setRole(Role.valueOf(request.role()));
+    public ResponseEntity<?> editRole(@Valid @RequestBody BidRequestDTO bidRequestDTO) {
+        User user = userService.findById(bidRequestDTO.idUser());
+        Role role = Role.valueOf(bidRequestDTO.role());
+
+        ReasonRefusal reasonRefusal = new ReasonRefusal(
+                bidRequestDTO.reason(),
+                user
+        );
+        reasonRefusalService.saveAndDeleteCheck(reasonRefusal, role, user);
+
+        user.setRole(role);
         userService.save(user);
 
         return ResponseEntity.ok().build();
@@ -100,10 +108,10 @@ public class UserController {
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/bids")
     public ResponseEntity<?> getBidList() {
-        List<User> usersNewBid = userService.findByAllRole(Role.NEW_BID);
+        List<User> usersNewBid = userService.findByRoleAndFilter(Role.NEW_BID, null);
         List<UserBidDTO> usersNewBidDTO = userMapper.toUserBidResponseDTOList(usersNewBid);
 
-        List<User> usersRejectedBid = userService.findByAllRole(Role.REJECTED_BID);
+        List<User> usersRejectedBid = userService.findByRoleAndFilter(Role.REJECTED_BID, null);
         List<ReasonRefusal> reasonRefusals = reasonRefusalService.findByAll();
         List<UserBidDTO> usersRejectedBidDTO = userMapper.toUserBidResponseDTOList(usersRejectedBid, reasonRefusals);
 
@@ -111,16 +119,20 @@ public class UserController {
     }
 
     /**
-     * Эндпоинт для показа всех пользователей с ролью USER
+     * Эндпоинт для показа всех пользователей с ролью USER с фильтрацией и их кол-во
      */
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping("/all")
-    public ResponseEntity<?> getAll() {
-        List<User> users = userService.findByAllRole(Role.USER);
+    @GetMapping("/all/{nameFilter}")
+    public ResponseEntity<?> getAll(@PathVariable String nameFilter) {
+        List<User> users = userService.findByRoleAndFilter(Role.USER, nameFilter);
         List<UserShortResponseDTO> usersDTO = userMapper.toUserShortResponseDTOList(users);
+        UserAllResponseDTO userResponseDTO = new UserAllResponseDTO(
+                usersDTO.size(),
+                usersDTO
+        );
 
-        return ResponseEntity.ok(usersDTO);
+        return ResponseEntity.ok(userResponseDTO);
     }
 
     /**
