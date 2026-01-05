@@ -120,12 +120,16 @@ public class UserController {
 
     /**
      * Эндпоинт для показа всех пользователей с ролью USER с фильтрацией и их кол-во
+     * @param nameFilter - опциональный параметр фильтрации по имени
      */
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping("/all/{nameFilter}")
-    public ResponseEntity<?> getAll(@PathVariable String nameFilter) {
-        List<User> users = userService.findByRoleAndFilter(Role.USER, nameFilter);
+    @GetMapping("/all")
+    public ResponseEntity<?> getAll(
+            @RequestParam(required = false, defaultValue = "") String nameFilter) {
+
+        String filter = nameFilter.isEmpty() ? null : nameFilter;
+        List<User> users = userService.findByRoleAndFilter(Role.USER, filter);
         List<UserShortResponseDTO> usersDTO = userMapper.toUserShortResponseDTOList(users);
         UserAllResponseDTO userResponseDTO = new UserAllResponseDTO(
                 usersDTO.size(),
