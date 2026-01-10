@@ -68,33 +68,31 @@ public class AuthService {
             if (saveRefreshToken != null && saveRefreshToken.equals(refreshToken)) {
                 final String accessToken = jwtProvider.generateAccessToken(user);
                 return new JwtResponseDTO(accessToken, null);
+            } else {
+                throw new AuthException("Указан несущестующий токен refresh");
             }
         }
-        throw new AuthException("Указан неверный токен refresh или срок действия сеанса истёк");
+        throw new AuthException("Указан невалидный токен refresh или срок действия сеанса истёк");
     }
 
     /**
-     * Полностью обновляет пару Access и Refresh токенов (ротация токенов)
-     * Проверяет валидность входящего Refresh токена, генерирует новые токены
-     *
-     * @throws AuthException Если токен невалиден или не совпадает с данными в БД.
+     * Выход из системы - refresh token из БД становится null
      */
-    public JwtResponseDTO refresh(String refreshToken) throws AuthException {
+    public void logout(String refreshToken) throws AuthException {
         if (jwtProvider.validateRefreshToken(refreshToken)) {
             final Claims claims = jwtProvider.getRefreshClaims(refreshToken);
             final String email = claims.getSubject();
             final User user = userService.findByEmail(email);
-            final String saveRefreshToken = refreshTokenService.findByUser(user).getToken();
-            if (saveRefreshToken != null && saveRefreshToken.equals(refreshToken)) {
-                final String accessToken = jwtProvider.generateAccessToken(user);
-                final String newRefreshToken = jwtProvider.generateRefreshToken(user);
-                RefreshToken refreshTokenEntity = refreshTokenService.findByUser(user);
-                refreshTokenEntity.setToken(newRefreshToken);
-                refreshTokenService.save(refreshTokenEntity);
-                return new JwtResponseDTO(accessToken, newRefreshToken);
+
+            RefreshToken token = refreshTokenService.findByUser(user);
+            if (token != null && refreshToken.equals(token.getToken())) {
+                token.setToken(null);
+                refreshTokenService.save(token);
+                return;
+            } else {
+                throw new AuthException("Указан несущестующий токен refresh");
             }
         }
-        throw new AuthException("Указан неверный токен refresh или срок действия сеанса истёк");
+        throw new AuthException("Указан невалидный токен refresh или срок действия сеанса истёк");
     }
-
 }

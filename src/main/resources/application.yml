@@ -4,8 +4,8 @@ jwt:
     access: qBTmv4oXFFR2GwjexDJ4t6fsIUIUhhXqlktXjXdkcyygs8nPVEwMfo29VDRRepYDVV5IkIxBMzr7OEHXEHd37w==
     refresh: iaXCG7x0/PQ7eUkz8Hu4vf5omfwx4R66PgQhBvkpjcBFu5jKHOtnoSFgFWiQcAmlEa+McQi+9gaT/wcmPRftew==
   expiration:
-    access: 30d
-    refresh: 30d
+    access: 5m
+    refresh: 7d
 
 spring:
   application:

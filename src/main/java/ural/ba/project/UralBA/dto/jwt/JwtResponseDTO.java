@@ -1,11 +1,12 @@
 package ural.ba.project.UralBA.dto.jwt;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  * @author Daria
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class JwtResponseDTO {
-
-    private final String type = "Bearer";
     private String accessToken;
     private String refreshToken;
 
@@ -18,15 +19,7 @@ public class JwtResponseDTO {
         return accessToken;
     }
 
-    public void setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
-    }
-
     public String getRefreshToken() {
         return refreshToken;
-    }
-
-    public void setRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
     }
 }
