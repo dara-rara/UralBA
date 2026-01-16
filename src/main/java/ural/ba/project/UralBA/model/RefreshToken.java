@@ -15,7 +15,7 @@ public class RefreshToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idToken;
 
-    @Column(nullable = true)
+    @Column(length = 500, nullable = true)
     private String token;
 
     @OneToOne(fetch = FetchType.EAGER)
