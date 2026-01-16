@@ -8,6 +8,10 @@ jwt:
     refresh: 7d
 
 spring:
+  config:
+    import: optional:file:.env[.properties]
+  profiles:
+    active: prod
   application:
     name: ural-ba
   mvc:
@@ -16,16 +20,12 @@ spring:
     resources:
       add-mappings: false
 
-  datasource:
-    url: jdbc:postgresql://localhost:5555/uralba
-    username: postgres
-    password: postgres
-    driver-class-name: org.postgresql.Driver
-
   jpa:
     open-in-view: false
     show-sql: true
     hibernate:
       ddl-auto: update
     properties:
-      hibernate.format_sql: true
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
