@@ -1,6 +1,5 @@
 package ural.ba.project.UralBA.config;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,9 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.servlet.HandlerExceptionResolver;
 import ural.ba.project.UralBA.seceruty.JwtFilter;
-import ural.ba.project.UralBA.seceruty.JwtProvider;
 
 import java.util.Arrays;
 
@@ -33,12 +30,6 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    private final JwtFilter jwtFilter;
-
-    public SecurityConfig(JwtProvider jwtProvider,
-                          @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver) {
-        this.jwtFilter = new JwtFilter(jwtProvider, handlerExceptionResolver);
-    }
 
     /**
      * Определяет цепочку фильтров безопасности (Security Filter Chain)
@@ -46,7 +37,7 @@ public class SecurityConfig {
      * и регистрирует JwtFilter перед стандартным фильтром аутентификации по логину/паролю
      */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(request -> request
@@ -68,21 +59,28 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:5173", "https://dianasuf-community-analysts-aecb.twc1.net"
-        )); // Разрешенные origin
+        ));
         configuration.setAllowedMethods(Arrays.asList(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS"
-        )); // Разрешенные методы
-        configuration.setAllowedHeaders(Arrays.asList(
-                "Authorization", "Content-Type", "X-Refresh-Token"
-        )); // Разрешенные заголовки
-        configuration.setExposedHeaders(Arrays.asList(
-                "Set-Cookie",      // Важно для cookies!
-                "Authorization"
         ));
-        configuration.setAllowCredentials(true); // Разрешить передачу учетных данных
+        configuration.setAllowedHeaders(Arrays.asList(
+                "Authorization",
+                "Content-Type",
+                "X-Refresh-Token",
+                "X-Requested-With",
+                "Accept",
+                "Origin"
+        ));
+        configuration.setExposedHeaders(Arrays.asList(
+                "Set-Cookie",
+                "Authorization",
+                "X-Refresh-Token"
+        ));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration); // Применить настройки ко всем путям
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 

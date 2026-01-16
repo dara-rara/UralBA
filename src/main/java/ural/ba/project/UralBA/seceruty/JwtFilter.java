@@ -4,13 +4,14 @@ import io.jsonwebtoken.Claims;
 import jakarta.security.auth.message.AuthException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
@@ -24,14 +25,16 @@ import java.io.IOException;
  *
  * @author Daria
  */
-public class JwtFilter extends GenericFilterBean {
+@Component
+public class JwtFilter extends OncePerRequestFilter {
 
     private static final String AUTHORIZATION = "Authorization";
 
     private final JwtProvider jwtProvider;
     private final HandlerExceptionResolver resolver;
 
-    public JwtFilter(JwtProvider jwtProvider, HandlerExceptionResolver resolver) {
+    public JwtFilter(JwtProvider jwtProvider,
+                     @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver) {
         this.jwtProvider = jwtProvider;
         this.resolver = resolver;
     }
@@ -42,11 +45,17 @@ public class JwtFilter extends GenericFilterBean {
      * либо делегирует обработку ошибки резолверу
      */
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain fc)
-            throws IOException, ServletException {
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain)
+            throws ServletException, IOException {
 
-        final String token = getTokenFromRequest(httpRequest);
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        final String token = getTokenFromRequest(request);
 
         if (token != null) {
             if (jwtProvider.validateAccessToken(token)) {
@@ -55,17 +64,16 @@ public class JwtFilter extends GenericFilterBean {
                 jwtInfoToken.setAuthenticated(true);
                 SecurityContextHolder.getContext().setAuthentication(jwtInfoToken);
             } else {
-                // Если токен невалиден, передаем исключение резолверу для обработки через @ControllerAdvice
                 resolver.resolveException(
-                        httpRequest,
-                        (HttpServletResponse) response,
+                        request,
+                        response,
                         null,
                         new AuthException("Неправильный или невалидный токен access")
                 );
-                return; // Прерываем дальнейшее выполнение цепочки фильтров
+                return;
             }
         }
-        fc.doFilter(request, response);
+        filterChain.doFilter(request, response);
     }
 
     /**
@@ -78,6 +86,4 @@ public class JwtFilter extends GenericFilterBean {
         }
         return null;
     }
-
 }
-
