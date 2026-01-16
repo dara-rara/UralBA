@@ -67,7 +67,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:5173", "https://brusnikacoworking.netlify.app"
+                "http://localhost:5173", "https://dianasuf-community-analysts-aecb.twc1.net"
         )); // Разрешенные origin
         configuration.setAllowedMethods(Arrays.asList(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS"
