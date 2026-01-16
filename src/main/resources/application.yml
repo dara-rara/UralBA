@@ -1,0 +1,31 @@
+jwt:
+  secret:
+    #тестовые! в prod через файл .env
+    access: qBTmv4oXFFR2GwjexDJ4t6fsIUIUhhXqlktXjXdkcyygs8nPVEwMfo29VDRRepYDVV5IkIxBMzr7OEHXEHd37w==
+    refresh: iaXCG7x0/PQ7eUkz8Hu4vf5omfwx4R66PgQhBvkpjcBFu5jKHOtnoSFgFWiQcAmlEa+McQi+9gaT/wcmPRftew==
+  expiration:
+    access: 5m
+    refresh: 7d
+
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  profiles:
+    active: prod
+  application:
+    name: ural-ba
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
+
+  jpa:
+    open-in-view: false
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect

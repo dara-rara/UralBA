@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5555/uralba
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    initialization-mode: always
+    continue-on-error: true
