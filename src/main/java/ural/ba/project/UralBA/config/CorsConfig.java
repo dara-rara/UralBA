@@ -1,11 +1,7 @@
 package ural.ba.project.UralBA.config;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * Конфигурационный класс, отвечающий за настройку доступа приложения
@@ -13,39 +9,17 @@ import java.util.Arrays;
  *
  * @author Daria
  */
-public class CorsConfig {
+public class CorsConfig implements WebMvcConfigurer {
 
-    /**
-     * Настраивает конфигурацию Cross-Origin Resource Sharing (CORS)
-     * Определяет разрешенные источники (origins), HTTP-методы и заголовки
-     */
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:5173", "https://dianasuf-community-analysts-aecb.twc1.net"
-        ));
-        configuration.setAllowedMethods(Arrays.asList(
-                "GET", "POST", "PUT", "DELETE", "OPTIONS"
-        ));
-        configuration.setAllowedHeaders(Arrays.asList(
-                "Authorization",
-                "Content-Type",
-                "X-Refresh-Token",
-                "X-Requested-With",
-                "Accept",
-                "Origin"
-        ));
-        configuration.setExposedHeaders(Arrays.asList(
-                "Set-Cookie",
-                "Authorization",
-                "X-Refresh-Token"
-        ));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:5173")
+                .allowedOrigins("https://dianasuf-community-analysts-aecb.twc1.net")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .exposedHeaders("*")
+                .allowCredentials(true)
+                .maxAge(3600L);
     }
 }
