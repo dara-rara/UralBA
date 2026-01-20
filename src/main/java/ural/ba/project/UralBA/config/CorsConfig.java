@@ -5,7 +5,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Конфигурационный класс, отвечающий за настройку доступа приложения
+ * Конфигурационный класс, отвечающий за настройку внешнего доступа к приложению
  * Определяет правила CORS
  *
  * @author Daria
